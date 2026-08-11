@@ -11,6 +11,8 @@ services:
       - SECRET_KEY=${SECRET_KEY:-heaven-in-a-bite-change-this-in-production}
       - APP_USERNAME=${APP_USERNAME:-admin}
       - APP_PASSWORD=${APP_PASSWORD:-heaven2026}
+      - BREVO_API_KEY=${BREVO_API_KEY:-}
+      - SENDER_EMAIL=${SENDER_EMAIL:-accounts@heaveninabite.co.za}
       - TZ=Africa/Johannesburg
     restart: unless-stopped
     healthcheck:
