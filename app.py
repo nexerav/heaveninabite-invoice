@@ -351,9 +351,13 @@ def send_email_trigger(invoice_id):
     configuration.api_key['api-key'] = BREVO_KEY
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
+    recipient_email = request.form.get('recipient_email', '').strip()
+    if not recipient_email:
+        return "No recipient email provided", 400
+
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         sender={"name": "Heaven in a Bite", "email": SENDER_EMAIL},
-        to=[{"email": SENDER_EMAIL, "name": invoice['client_name']}],
+        to=[{"email": recipient_email, "name": invoice['client_name']}],
         reply_to={"email": SENDER_EMAIL, "name": "Heaven in a Bite"},
         subject=f"Invoice {invoice['invoice_number']} — Heaven in a Bite",
         html_content=html_body,
