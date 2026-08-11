@@ -358,6 +358,7 @@ def send_email_trigger(invoice_id):
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         sender={"name": "Heaven in a Bite", "email": SENDER_EMAIL},
         to=[{"email": recipient_email, "name": invoice['client_name']}],
+        cc=[{"email": SENDER_EMAIL, "name": "Heaven in a Bite"}],
         reply_to={"email": SENDER_EMAIL, "name": "Heaven in a Bite"},
         subject=f"Invoice {invoice['invoice_number']} — Heaven in a Bite",
         html_content=html_body,
