@@ -1,0 +1,21 @@
+services:
+  heaven-invoicing:
+    build: .
+    container_name: heaven-invoicing
+    ports:
+      - "5004:5004"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-heaven-in-a-bite-change-this-in-production}
+      - APP_USERNAME=${APP_USERNAME:-admin}
+      - APP_PASSWORD=${APP_PASSWORD:-heaven2026}
+      - TZ=Africa/Johannesburg
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

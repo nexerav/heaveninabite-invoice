@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if invoice %}Edit Invoice #{{ invoice.invoice_number }}{% else %}New Invoice{% endif %} | Heaven in a Bite</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #fffcf8;
+        }
+        .serif-font {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- Header / Navbar Section -->
+    <header class="bg-white border-b border-[#e0d8cb] sticky top-0 z-40">
+        <div class="max-w-xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-10 h-10 text-[#c5a880]" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="2,2"/>
+                    <path d="M 32,58 C 32,58 35,42 50,42 C 65,42 68,58 68,58" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+                <div>
+                    <h1 class="text-lg serif-font font-bold text-stone-900 leading-tight">
+                        {% if invoice %}Edit Invoice #{{ invoice.invoice_number }}{% else %}Bespoke Invoice Builder{% endif %}
+                    </h1>
+                </div>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="px-3 py-1.5 border border-[#e0d8cb] hover:border-stone-900 rounded text-xs uppercase tracking-wider font-semibold text-stone-600 hover:text-stone-900 transition">
+                Dashboard
+            </a>
+        </div>
+    </header>
+
+    <!-- Content Form Container (iPad Optimized) -->
+    <main class="max-w-xl mx-auto px-4 mt-8">
+        <form action="{% if invoice %}{{ url_for('edit_invoice', invoice_id=invoice.id) }}{% else %}{{ url_for('create_invoice') }}{% endif %}" method="POST" class="space-y-6">
+            
+            <!-- 1. Client Personal Details Card -->
+            <div class="bg-white border border-[#e0d8cb] rounded-lg p-6 shadow-sm">
+                <h3 class="text-base font-bold text-stone-800 uppercase tracking-wider mb-4 border-b border-stone-100 pb-2 flex items-center gap-2 text-[#aa8c62]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    1. Client Account Profile
+                </h3>
+                
+                <div class="space-y-4">
+                    <!-- Client Dropdown Selection -->
+                    <div>
+                        <label for="client_option" class="block text-xs font-semibold text-stone-500 uppercase mb-1">Customer Name *</label>
+                        <select id="client_option" name="client_option" required onchange="toggleClientOther()"
+                                class="w-full px-4 py-3 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] font-semibold">
+                            <!-- Pre-populate correctly for editing -->
+                            {% if invoice %}
+                                <option value="Marble Group" {% if invoice.client_name == 'Marble Group' %}selected{% endif %}>Marble Group</option>
+                                <option value="Akti Bassonia" {% if invoice.client_name == 'Akti Bassonia' %}selected{% endif %}>Akti Bassonia</option>
+                                <option value="Other" {% if invoice.client_name != 'Marble Group' and invoice.client_name != 'Akti Bassonia' %}selected{% endif %}>Other (Type Custom Name)</option>
+                            {% else %}
+                                <option value="Marble Group">Marble Group</option>
+                                <option value="Akti Bassonia">Akti Bassonia</option>
+                                <option value="Other">Other (Type Custom Name)</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <!-- Custom Client Input (Visible only if Other selected) -->
+                    <div id="client_other_container" class="hidden">
+                        <label for="client_name_other" class="block text-xs font-semibold text-[#aa8c62] uppercase mb-1">Enter Customer Name *</label>
+                        <input type="text" id="client_name_other" name="client_name_other" 
+                               value="{% if invoice and invoice.client_name != 'Marble Group' and invoice.client_name != 'Akti Bassonia' %}{{ invoice.client_name }}{% endif %}"
+                               placeholder="Type name here..." 
+                               class="w-full px-4 py-3 rounded border border-[#c5a880] outline-none text-sm text-stone-900 bg-white">
+                    </div>
+
+                    <!-- Date & Status -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="date" class="block text-xs font-semibold text-stone-500 uppercase mb-1">Date Issued *</label>
+                            <input type="date" id="date" name="date" required value="{{ today_str }}"
+                                   class="w-full px-4 py-3 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8]">
+                        </div>
+                        <div>
+                            <label for="status" class="block text-xs font-semibold text-stone-500 uppercase mb-1">Settlement Status *</label>
+                            <select id="status" name="status" required class="w-full px-4 py-3 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] font-bold">
+                                <option value="Unpaid" class="text-red-700 font-bold" {% if invoice and invoice.status == 'Unpaid' %}selected{% endif %}>UNPAID (Outstanding)</option>
+                                <option value="Paid" class="text-emerald-700 font-bold" {% if invoice and invoice.status == 'Paid' %}selected{% endif %}>PAID (Settled)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Qty & Amount Card -->
+            <div class="bg-white border border-[#e0d8cb] rounded-lg p-6 shadow-sm">
+                <h3 class="text-base font-bold text-stone-800 uppercase tracking-wider mb-4 border-b border-stone-100 pb-2 flex items-center justify-between text-[#aa8c62]">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        2. Quantity & Amount
+                    </span>
+                    <span class="text-xs text-stone-400 font-semibold uppercase tracking-wider">
+                        Invoice No: <font color="#202020"><b>{{ upcoming_invoice_number }}</b></font>
+                    </span>
+                </h3>
+
+                <!-- Column headers -->
+                <div class="grid grid-cols-[1fr_80px_110px_32px] gap-2 mb-1 px-1">
+                    <span class="text-xs font-semibold text-stone-400 uppercase">Description</span>
+                    <span class="text-xs font-semibold text-stone-400 uppercase text-center">Qty</span>
+                    <span class="text-xs font-semibold text-stone-400 uppercase text-right">Price (R)</span>
+                    <span></span>
+                </div>
+
+                <!-- Items list -->
+                <div id="items-list" class="space-y-2">
+                    {% if items_list %}
+                        {% for item in items_list %}
+                        <div class="item-row grid grid-cols-[1fr_80px_110px_32px] gap-2 items-center">
+                            <input type="text" name="item_desc[]" required placeholder="e.g. Celebration Cake"
+                                   value="{{ item.description }}"
+                                   class="px-3 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8]">
+                            <input type="number" name="item_qty[]" required min="1" value="{{ item.qty }}" oninput="recalculateTotal()"
+                                   class="px-2 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] text-center font-bold">
+                            <input type="number" name="item_price[]" required step="0.01" min="0" value="{{ item.price }}" oninput="recalculateTotal()" placeholder="0.00"
+                                   class="px-2 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] text-right font-bold">
+                            <button type="button" onclick="removeItem(this)" class="w-8 h-8 flex items-center justify-center rounded text-stone-300 hover:text-red-400 hover:bg-red-50 transition text-lg leading-none">&times;</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="item-row grid grid-cols-[1fr_80px_110px_32px] gap-2 items-center">
+                            <input type="text" name="item_desc[]" required placeholder="e.g. Celebration Cake"
+                                   class="px-3 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8]">
+                            <input type="number" name="item_qty[]" required min="1" value="1" oninput="recalculateTotal()"
+                                   class="px-2 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] text-center font-bold">
+                            <input type="number" name="item_price[]" required step="0.01" min="0" value="" oninput="recalculateTotal()" placeholder="0.00"
+                                   class="px-2 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] text-right font-bold">
+                            <button type="button" onclick="removeItem(this)" class="w-8 h-8 flex items-center justify-center rounded text-stone-300 hover:text-red-400 hover:bg-red-50 transition text-lg leading-none">&times;</button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Add Item button -->
+                <button type="button" onclick="addItem()"
+                        class="mt-3 w-full py-2 border border-dashed border-[#c5a880] rounded text-xs font-bold uppercase tracking-wider text-[#aa8c62] hover:bg-[#fdf6ec] transition flex items-center justify-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    Add Item
+                </button>
+
+                <!-- Calculated live output -->
+                <div class="flex items-center justify-between mt-6 pt-5 border-t border-stone-100">
+                    <span class="text-xs uppercase tracking-wider font-semibold text-stone-400">Live Calculated Total:</span>
+                    <span class="text-2xl font-bold serif-font text-[#aa8c62]" id="live-total-display">R 0.00</span>
+                </div>
+            </div>
+
+            <!-- 3. Dynamic Banking Details Card -->
+            <div class="bg-white border border-[#e0d8cb] rounded-lg p-6 shadow-sm">
+                <h3 class="text-base font-bold text-stone-800 uppercase tracking-wider mb-3 border-b border-stone-100 pb-2 flex items-center gap-2 text-[#aa8c62]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    3. Studio Banking Details
+                </h3>
+                <div class="space-y-1.5 text-xs text-stone-600 bg-stone-50/50 p-4 rounded-lg border border-stone-100 leading-relaxed">
+                    <p><strong>Bank:</strong> FNB (First National Bank)</p>
+                    <p><strong>Account Name:</strong> KK Constantinou</p>
+                    <p><strong>Account Number:</strong> 63182442920</p>
+                    <p><strong>Branch Code:</strong> 253442</p>
+                    <p><strong>Reference:</strong> <span class="bg-[#c5a880]/15 px-2 py-0.5 rounded text-stone-800 font-bold">{{ upcoming_invoice_number }}</span></p>
+                </div>
+            </div>
+
+            <!-- Form submission triggers -->
+            <div class="flex items-center gap-4">
+                <button type="submit" class="flex-grow py-4 bg-[#c5a880] hover:bg-[#aa8c62] active:bg-stone-950 text-white font-bold rounded-lg shadow-md transition uppercase tracking-wider text-xs">
+                    {% if invoice %}Update Invoice Details{% else %}Create Invoice & Lock Number{% endif %}
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="px-5 py-4 border border-[#e0d8cb] hover:border-stone-900 text-stone-600 hover:text-stone-900 font-bold rounded-lg uppercase tracking-wider text-[10px] transition text-center">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+
+    <!-- Client-side Scripts for toggle controls & math -->
+    <script>
+        function toggleClientOther() {
+            const selectEl = document.getElementById('client_option');
+            const otherContainer = document.getElementById('client_other_container');
+            const otherInput = document.getElementById('client_name_other');
+            if (selectEl.value === 'Other') {
+                otherContainer.classList.remove('hidden');
+                otherInput.setAttribute('required', 'true');
+            } else {
+                otherContainer.classList.add('hidden');
+                otherInput.removeAttribute('required');
+            }
+        }
+
+        function recalculateTotal() {
+            const qtys   = document.querySelectorAll('input[name="item_qty[]"]');
+            const prices = document.querySelectorAll('input[name="item_price[]"]');
+            let total = 0;
+            qtys.forEach((q, i) => {
+                total += (parseFloat(q.value) || 0) * (parseFloat(prices[i].value) || 0);
+            });
+            document.getElementById('live-total-display').innerText =
+                'R ' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function addItem() {
+            const list = document.getElementById('items-list');
+            const row = document.createElement('div');
+            row.className = 'item-row grid grid-cols-[1fr_80px_110px_32px] gap-2 items-center';
+            row.innerHTML = `
+                <input type="text" name="item_desc[]" required placeholder="e.g. Celebration Cake"
+                       class="px-3 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8]">
+                <input type="number" name="item_qty[]" required min="1" value="1" oninput="recalculateTotal()"
+                       class="px-2 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] text-center font-bold">
+                <input type="number" name="item_price[]" required step="0.01" min="0" value="" oninput="recalculateTotal()" placeholder="0.00"
+                       class="px-2 py-2.5 rounded border border-[#e0d8cb] outline-none focus:border-[#c5a880] text-sm text-stone-900 bg-[#fffcf8] text-right font-bold">
+                <button type="button" onclick="removeItem(this)" class="w-8 h-8 flex items-center justify-center rounded text-stone-300 hover:text-red-400 hover:bg-red-50 transition text-lg leading-none">&times;</button>
+            `;
+            list.appendChild(row);
+            row.querySelector('input[name="item_desc[]"]').focus();
+        }
+
+        function removeItem(btn) {
+            const rows = document.querySelectorAll('.item-row');
+            if (rows.length === 1) return; // always keep at least one row
+            btn.closest('.item-row').remove();
+            recalculateTotal();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            toggleClientOther();
+            recalculateTotal();
+        });
+    </script>
+</body>
+</html>

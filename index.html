@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heaven in a Bite | Bespoke Cakes & Platters | Boksburg</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #c5a880;
+            --primary-dark: #b59468;
+            --dark: #202020;
+            --light: #fffcf8;
+            --white: #ffffff;
+            --border: #e8e2d5;
+            --text-muted: #6b6a65;
+            --font-serif: "Playfair Display", serif;
+            --font-sans: "DM Sans", sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--light);
+            color: var(--dark);
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top bar */
+        .top-bar {
+            background-color: var(--dark);
+            color: var(--light);
+            text-align: center;
+            padding: 7px 0;
+            font-size: 0.65rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        /* Main landing card */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+        }
+
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 560px;
+            width: 100%;
+            padding: 52px 48px 44px;
+            text-align: center;
+            box-shadow: 0 8px 40px rgba(197, 168, 128, 0.1);
+        }
+
+        /* Gold divider line */
+        .divider {
+            width: 48px;
+            height: 1px;
+            background: var(--primary);
+            margin: 0 auto 28px;
+        }
+
+        .brand-name {
+            font-family: var(--font-serif);
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--dark);
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .brand-tagline {
+            font-size: 0.68rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 28px;
+        }
+
+        .brand-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-weight: 300;
+            margin-bottom: 32px;
+        }
+
+        /* Offering pills */
+        .offerings {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 36px;
+        }
+
+        .pill {
+            background: #f5eedf;
+            color: var(--primary-dark);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 5px 14px;
+            border-radius: 20px;
+        }
+
+        /* Contact rows */
+        .contact-block {
+            border-top: 1px solid var(--border);
+            padding-top: 28px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .contact-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .contact-row strong {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--dark);
+            min-width: 70px;
+            text-align: right;
+        }
+
+        /* Action buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 22px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid var(--dark);
+            background: transparent;
+            color: var(--dark);
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--dark);
+            color: var(--light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: #61605c;
+            text-align: center;
+            padding: 14px 0;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 40px 28px 36px; }
+            .brand-name { font-size: 1.9rem; }
+            .btn-group { flex-direction: column; }
+            .contact-row { flex-direction: column; gap: 2px; }
+            .contact-row strong { text-align: center; min-width: unset; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">Bespoke Baking Studio &bull; Boksburg, South Africa</div>
+
+    <main>
+        <div class="card">
+            <div class="divider"></div>
+            <h1 class="brand-name">Heaven in a Bite</h1>
+            <p class="brand-tagline">Cakes &amp; Platters &bull; Boksburg</p>
+
+            <p class="brand-desc">
+                Artisanal cakes and gourmet platters baked completely from scratch with premium local ingredients. Bespoke designs for weddings, birthdays, and every occasion worth celebrating.
+            </p>
+
+            <div class="offerings">
+                <span class="pill">Wedding Cakes</span>
+                <span class="pill">Celebration Cakes</span>
+                <span class="pill">Savory Platters</span>
+                <span class="pill">Sweet Platters</span>
+                <span class="pill">Cupcakes</span>
+                <span class="pill">Macarons</span>
+            </div>
+
+            <div class="contact-block">
+                <div class="contact-row">
+                    <strong>Owner</strong>
+                    <span>Koulla Constantinou</span>
+                </div>
+                <div class="contact-row">
+                    <strong>Studio</strong>
+                    <span>23 First Street, Bardene, Boksburg, 1459</span>
+                </div>
+                <div class="contact-row">
+                    <strong>WhatsApp</strong>
+                    <span>+27 84 202 0100</span>
+                </div>
+                <div class="contact-row">
+                    <strong>E-Mail</strong>
+                    <span>Koulla@heaveninabite.co.za</span>
+                </div>
+                <div class="contact-row">
+                    <strong>Hours</strong>
+                    <span>Mon–Fri 08:00–17:00 &nbsp;|&nbsp; Sat 08:00–13:00</span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a href="https://wa.me/27842020100" target="_blank" class="btn btn-primary">WhatsApp Us</a>
+                <a href="mailto:Koulla@heaveninabite.co.za" class="btn">Send Email</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2026 Heaven in a Bite &bull; Boksburg, South Africa &bull; Crafted by IBM Bob
+    </footer>
+
+</body>
+</html>

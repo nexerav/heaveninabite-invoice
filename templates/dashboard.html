@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoicing Dashboard | Heaven in a Bite</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #fffcf8;
+        }
+        .serif-font {
+            font-family: 'Playfair Display', serif;
+        }
+        /* iPad touch drag custom scrollbar */
+        .ipad-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .ipad-scroll::-webkit-scrollbar-track {
+            background: #fffcf8;
+        }
+        .ipad-scroll::-webkit-scrollbar-thumb {
+            background-color: #e0d8cb;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <!-- Header / Navbar Section -->
+    <header class="bg-white border-b border-[#e0d8cb] sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-10 h-10 text-[#c5a880]" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="2,2"/>
+                    <path d="M 32,58 C 32,58 35,42 50,42 C 65,42 68,58 68,58" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                    <circle cx="50" cy="27" r="4" fill="currentColor"/>
+                    <path d="M 35,58 L 65,58 C 65,58 66,66 50,66 C 34,66 35,58 35,58 Z" fill="currentColor" opacity="0.8"/>
+                </svg>
+                <div>
+                    <h1 class="text-xl serif-font font-bold text-stone-900 leading-tight">Heaven in a Bite</h1>
+                    <p class="text-[10px] tracking-widest text-[#c5a880] uppercase font-semibold">Studio Invoicing System</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="hidden sm:inline text-sm text-stone-500 font-medium">Hello, <strong class="text-stone-800">{{ username }}</strong></span>
+                <a href="{{ url_for('logout') }}" class="px-3.5 py-1.5 border border-[#e0d8cb] hover:border-stone-900 rounded text-xs uppercase tracking-wider font-semibold text-stone-600 hover:text-stone-900 transition">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        
+        {% if request.args.get('email_sent') %}
+        <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center justify-between shadow-sm animate-pulse">
+            <span class="text-sm font-semibold flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                Success! Invoice <strong>{{ request.args.get('email_sent') }}</strong> has been queued & emailed successfully.
+            </span>
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-900 font-bold text-lg leading-none">&times;</button>
+        </div>
+        {% endif %}
+        
+        <!-- iPad KPI Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            <div class="bg-white border border-[#e0d8cb] p-6 rounded-lg shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-wider font-semibold text-stone-400 mb-1">Total Booked & Invoiced</p>
+                    <p class="text-3xl font-bold text-stone-900 serif-font">R {{ "{:,.2f}".format(total_invoiced) }}</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+            
+            <div class="bg-white border border-[#e0d8cb] p-6 rounded-lg shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-wider font-semibold text-stone-400 mb-1">Outstanding (Unpaid)</p>
+                    <p class="text-3xl font-bold text-red-700 serif-font">R {{ "{:,.2f}".format(unpaid_total) }}</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+            </div>
+
+            <div class="bg-white border border-[#e0d8cb] p-6 rounded-lg shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs uppercase tracking-wider font-semibold text-stone-400 mb-1">Settled Income (Paid)</p>
+                    <p class="text-3xl font-bold text-emerald-700 serif-font">R {{ "{:,.2f}".format(paid_total) }}</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar Section (Filters, Search & Create) -->
+        <div class="bg-white border border-[#e0d8cb] rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
+            <!-- Filters & Search -->
+            <form action="{{ url_for('dashboard') }}" method="GET" class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <select name="status" onchange="this.form.submit()" class="px-4 py-2.5 rounded border border-[#e0d8cb] outline-none text-stone-700 text-sm focus:border-[#c5a880]">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                    <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid / Settled</option>
+                    <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>Unpaid / Outstanding</option>
+                </select>
+                
+                <div class="relative flex-grow sm:flex-grow-0">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search client name / number..." 
+                           class="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded border border-[#e0d8cb] outline-none text-sm text-stone-700 focus:border-[#c5a880]">
+                    <div class="absolute left-3 top-3 text-stone-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                </div>
+                
+                {% if search_query or status_filter != 'all' %}
+                <a href="{{ url_for('dashboard') }}" class="text-xs font-semibold text-stone-400 hover:text-stone-700">Clear Reset</a>
+                {% endif %}
+            </form>
+            
+            <!-- Create New button -->
+            <a href="{{ url_for('create_invoice') }}" class="px-5 py-3.5 bg-[#c5a880] hover:bg-[#aa8c62] text-white rounded font-bold uppercase tracking-wider text-sm shadow-sm flex items-center justify-center gap-2 transition duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                New Invoice
+            </a>
+        </div>
+
+        <!-- Invoices List Container (Scrollable on iPad) -->
+        <div class="bg-white border border-[#e0d8cb] rounded-lg shadow-sm overflow-hidden">
+            <div class="overflow-x-auto ipad-scroll">
+                <table class="min-w-full divide-y divide-[#e0d8cb] text-left">
+                    <thead class="bg-stone-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500">Invoice No</th>
+                            <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500">Date Issued</th>
+                            <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500">Client Info</th>
+                            <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500">Total Amount</th>
+                            <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500">Status</th>
+                            <th scope="col" class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-stone-500 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-100 bg-white">
+                        {% for inv in invoices %}
+                        <tr class="hover:bg-[#fffcf8]/40 transition">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-900">
+                                {{ inv.invoice_number }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-stone-500">
+                                {{ inv.date }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-semibold text-stone-800">{{ inv.client_name }}</div>
+                                <div class="text-xs text-stone-400">{{ inv.client_email or 'No email' }} &bull; {{ inv.client_phone or 'No phone' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-stone-900 font-medium">
+                                R {{ "{:,.2f}".format(inv.total_amount) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if inv.status == 'Paid' %}
+                                <span class="px-2.5 py-1 text-xs font-bold leading-5 text-emerald-800 bg-emerald-100/80 rounded-full uppercase tracking-wider">
+                                    Paid
+                                </span>
+                                {% else %}
+                                <span class="px-2.5 py-1 text-xs font-bold leading-5 text-red-800 bg-red-100/80 rounded-full uppercase tracking-wider">
+                                    Unpaid
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center justify-end gap-2.5">
+                                    <!-- View/Print PDF -->
+                                    <a href="{{ url_for('download_pdf', invoice_id=inv.id) }}" target="_blank" class="p-2 text-stone-500 hover:text-stone-900 bg-stone-100 hover:bg-[#e0d8cb]/40 rounded transition" title="Print/Preview PDF">
+                                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm5-17V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    </a>
+                                    
+                                    <!-- Send Email -->
+                                    <form action="{{ url_for('send_email_trigger', invoice_id=inv.id) }}" method="POST" class="inline">
+                                        <button type="submit" class="p-2 text-sky-600 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 rounded transition" title="Send Email">
+                                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Edit details -->
+                                    <a href="{{ url_for('edit_invoice', invoice_id=inv.id) }}" class="p-2 text-[#aa8c62] hover:text-[#c5a880] bg-[#f5eedf] hover:bg-[#f5eedf]/60 rounded transition" title="Edit Invoice">
+                                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </a>
+                                    
+                                    <!-- Delete invoice with confirmation warning -->
+                                    <form action="{{ url_for('delete_invoice', invoice_id=inv.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this invoice?');" class="inline">
+                                        <button type="submit" class="p-2 text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 rounded transition" title="Delete Invoice">
+                                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-stone-400">
+                                <svg class="w-12 h-12 mx-auto mb-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <p class="text-sm font-semibold">No invoices found matching your details.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

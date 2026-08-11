@@ -1,0 +1,95 @@
+{
+  "folders": [
+    {
+      "name": "HeavenInaBite",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      ".bob": true
+    },
+    "files.associations": {
+      "*.html": "html",
+      "*.py": "python"
+    },
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.extraPaths": [
+      "${workspaceFolder}"
+    ],
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "[html]": {
+      "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "emmet.includeLanguages": {
+      "jinja-html": "html"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.black-formatter",
+      "ms-python.flake8",
+      "wholroyd.jinja",
+      "ms-azuretools.vscode-docker"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Run Flask App",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/app.py",
+        "console": "integratedTerminal",
+        "env": {
+          "FLASK_ENV": "development",
+          "FLASK_DEBUG": "1"
+        }
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Install Requirements",
+        "type": "shell",
+        "command": "pip install -r requirements.txt",
+        "group": "build",
+        "presentation": {
+          "reveal": "always",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Init Database",
+        "type": "shell",
+        "command": "python db_init.py",
+        "group": "build",
+        "presentation": {
+          "reveal": "always",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Run with Docker Compose",
+        "type": "shell",
+        "command": "docker-compose up --build",
+        "group": "build",
+        "presentation": {
+          "reveal": "always",
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}

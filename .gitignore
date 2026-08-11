@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Database & exports (runtime data)
+data/database.db
+data/exports/
+
+# VS Code / Bob
+.bob/
+
+# macOS
+.DS_Store
