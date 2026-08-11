@@ -3,10 +3,13 @@ from functools import wraps
 import os
 import json
 import sqlite3
+import base64
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from db_init import init_db, DB_PATH
 from pdf_gen import generate_invoice_pdf
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
 
 load_dotenv()
 
@@ -17,8 +20,10 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2) # Longer sessions 
 # Run DB Initialization
 init_db()
 
-USERNAME = os.environ.get('APP_USERNAME', 'admin')
-PASSWORD = os.environ.get('APP_PASSWORD', 'heaven2026')
+USERNAME    = os.environ.get('APP_USERNAME', 'admin')
+PASSWORD    = os.environ.get('APP_PASSWORD', 'heaven2026')
+BREVO_KEY   = os.environ.get('BREVO_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'accounts@heaveninabite.co.za')
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -278,21 +283,93 @@ def delete_invoice(invoice_id):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# Send Email trigger / mock configuration endpoint
+# Send Email via Brevo
 @app.route('/invoice/<int:invoice_id>/email', methods=['POST'])
 @login_required
 def send_email_trigger(invoice_id):
     conn = get_db_connection()
-    invoice = conn.execute('SELECT * FROM invoices WHERE id = ?', (invoice_id,)).fetchone()
+    invoice_row = conn.execute('SELECT * FROM invoices WHERE id = ?', (invoice_id,)).fetchone()
     conn.close()
-    
-    if not invoice:
+
+    if not invoice_row:
         return "Invoice not found", 404
-        
-    # Standard log output for easy customer console debugging
-    print(f"SMTP DISPATCH SUCCESS: Simulated dispatch of {invoice['invoice_number']} to {invoice['client_name']}.")
-    
-    return redirect(url_for('dashboard', email_sent=invoice['invoice_number']))
+
+    invoice = dict(invoice_row)
+
+    # Generate PDF if it doesn't exist
+    pdf_filename = f"invoice_{invoice['invoice_number']}.pdf"
+    pdf_path = os.path.join('data/exports', pdf_filename)
+    if not os.path.exists(pdf_path):
+        os.makedirs('data/exports', exist_ok=True)
+        generate_invoice_pdf(invoice, pdf_path)
+
+    # Read & base64-encode the PDF for attachment
+    with open(pdf_path, 'rb') as f:
+        pdf_b64 = base64.b64encode(f.read()).decode('utf-8')
+
+    # Build email body
+    html_body = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#202020;">
+        <h2 style="color:#c5a880;border-bottom:1px solid #e0d8cb;padding-bottom:10px;">
+            Heaven in a Bite — Invoice {invoice['invoice_number']}
+        </h2>
+        <p>Dear <strong>{invoice['client_name']}</strong>,</p>
+        <p>Please find your invoice attached for <strong>R {float(invoice['total_amount']):,.2f}</strong>.</p>
+        <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+            <tr style="background:#f5eedf;">
+                <td style="padding:10px;font-weight:bold;">Invoice No</td>
+                <td style="padding:10px;">{invoice['invoice_number']}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px;font-weight:bold;">Date Issued</td>
+                <td style="padding:10px;">{invoice['date']}</td>
+            </tr>
+            <tr style="background:#f5eedf;">
+                <td style="padding:10px;font-weight:bold;">Amount Due</td>
+                <td style="padding:10px;color:#c62828;font-weight:bold;">R {float(invoice['total_amount']):,.2f}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px;font-weight:bold;">Status</td>
+                <td style="padding:10px;">{invoice['status']}</td>
+            </tr>
+        </table>
+        <div style="background:#f5eedf;padding:16px;border-radius:6px;margin:20px 0;">
+            <p style="margin:0 0 6px;font-weight:bold;">Banking Details</p>
+            <p style="margin:2px 0;">Bank: FNB (First National Bank)</p>
+            <p style="margin:2px 0;">Account Name: KK Constantinou</p>
+            <p style="margin:2px 0;">Account Number: 63182442920</p>
+            <p style="margin:2px 0;">Branch Code: 253442</p>
+            <p style="margin:2px 0;">Reference: <strong>{invoice['invoice_number']}</strong></p>
+        </div>
+        <p>Thank you for choosing Heaven in a Bite!</p>
+        <p style="color:#c5a880;font-size:12px;">Koulla Constantinou &bull; accounts@heaveninabite.co.za &bull; +27 84 202 0100</p>
+    </div>
+    """
+
+    # Configure Brevo API
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = BREVO_KEY
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+        sender={"name": "Heaven in a Bite", "email": SENDER_EMAIL},
+        to=[{"email": SENDER_EMAIL, "name": invoice['client_name']}],
+        reply_to={"email": SENDER_EMAIL, "name": "Heaven in a Bite"},
+        subject=f"Invoice {invoice['invoice_number']} — Heaven in a Bite",
+        html_content=html_body,
+        attachment=[{
+            "content": pdf_b64,
+            "name": pdf_filename
+        }]
+    )
+
+    try:
+        api_instance.send_transac_email(send_smtp_email)
+        print(f"BREVO: Sent {invoice['invoice_number']} to {SENDER_EMAIL}")
+        return redirect(url_for('dashboard', email_sent=invoice['invoice_number']))
+    except ApiException as e:
+        print(f"BREVO ERROR: {e}")
+        return redirect(url_for('dashboard', email_sent=f"FAILED-{invoice['invoice_number']}"))
 
 # View / Preview HTML layout or Download PDF
 @app.route('/invoice/<int:invoice_id>/pdf')
