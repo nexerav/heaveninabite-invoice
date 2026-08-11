@@ -60,6 +60,7 @@ Single-screen no-scroll landing page. No frameworks — pure HTML/CSS.
 - Removed "Our Logo" section and nav link
 - Removed portfolio gallery, booking planner, FAQ, contact section
 - Simplified to single-screen card layout
+- Added **Client Portal** button (top-right of top bar) linking to `http://156.155.253.123:5004`
 
 ---
 
@@ -167,6 +168,8 @@ docker compose up -d --build
 
 | Hash | Description |
 |---|---|
+| `526af7f` | feat: add Client Portal button to landing page top bar |
+| `f322e5f` | docs: add full project documentation to heaveninabite.md |
 | `68a4950` | feat: CC accounts@heaveninabite.co.za on every invoice email |
 | `839b09e` | fix: show red error banner on failed email |
 | `a9a4604` | fix: update login footer to Powered by Nexera Ventures |
