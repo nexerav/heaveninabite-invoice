@@ -59,13 +59,23 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         
         {% if request.args.get('email_sent') %}
+        {% if 'FAILED-' in request.args.get('email_sent') %}
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center justify-between shadow-sm">
+            <span class="text-sm font-semibold flex items-center gap-2">
+                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                Failed to send invoice <strong>{{ request.args.get('email_sent')|replace('FAILED-','') }}</strong>. Check your Brevo API key.
+            </span>
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-900 font-bold text-lg leading-none">&times;</button>
+        </div>
+        {% else %}
         <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center justify-between shadow-sm animate-pulse">
             <span class="text-sm font-semibold flex items-center gap-2">
                 <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                Success! Invoice <strong>{{ request.args.get('email_sent') }}</strong> has been queued & emailed successfully.
+                Invoice <strong>{{ request.args.get('email_sent') }}</strong> sent successfully.
             </span>
             <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-900 font-bold text-lg leading-none">&times;</button>
         </div>
+        {% endif %}
         {% endif %}
         
         <!-- iPad KPI Metrics Grid -->
